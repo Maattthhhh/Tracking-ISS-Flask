@@ -44,18 +44,24 @@
     h1 {margin-bottom: 30px;}
     p {margin-bottom: 20px;}
     .wikicontent {
-        border: 1px solid #0f0f0f;
-        padding: 15px;
-        display: flex;
+        position: absolute;
+        top: calc(5% + 40px);
+        right: 5%;
+        height: 400px;
+        width: 400px;
+        font-size: 12px;
+        overflow: 500px;
+        overflow-y: auto;
         align-items: center;
+        letter-spacing: 5px;
+        display: inline-block;
     }
     .wikicontent img {
         margin-right: 15px;
         max-width: 200px;
         max-height: 200px;
-    }
-    .wikicontent img:hover{
-        transform: scale(1.2);
+        transition: -webkit-transform 0.25s ease, transform 0.25s ease;
+        object-fit: contain;
     }
 </style>
     <br>
@@ -102,17 +108,19 @@
 				document.getElementById('cli').textContent = `The weather condition in ${city} is ${temperature} ${description}`;
 			}
 		async function getCondition(city) {
-			const urlC = `https://wttr.in/${city}?format=%c`;
-            const urlT = `https://wttr.in/${city}?format=%t`;
-			const responseC = await fetch(urlC);
-            const responseT = await fetch(urlT);
-		    const rawC = await responseC.text();
-            const rawT = await responseT.text();
-			const conditionC = rawC.trim();
-            const conditionT = rawT.trim();
-			return { description: conditionC, temperature: conditionT };
-		}}
-		getISS();
+            const urlc =`https://wttr.in/${encodeURIComponent(city)}?format=j1`;
+
+            const response = await fetch(urlc);
+            const data = await response.json();
+
+            const current = data.current_condition[0];
+
+            return {
+                description: current.weatherDesc[0].value,
+                temperature: current.temp_C + "℃"
+            };
+            }}
+        getISS();
 </script>        
 </body>
 </html>

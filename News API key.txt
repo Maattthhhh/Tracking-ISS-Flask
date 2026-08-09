@@ -1,0 +1,2 @@
+https://newsapi.org/register/success
+Your API key is: c4ea21366d694565b6ffa1247a6cdc51

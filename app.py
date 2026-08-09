@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup as soup
 from geopy.geocoders import Nominatim
 import urllib.parse
 from lxml import etree
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -47,7 +48,10 @@ def index():
                         filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
                         wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
                         if wikimages:
-                            wikimage_src = wikimages[1]['src']
+                            if "Page semi-protected" in wikimages[1]['src']:
+                                wikimage_src = wikimages[2]['src']
+                            else:
+                                wikimage_src = wikimages[1]['src']
                         else:
                             wikimage_src = "static/globe.gif"
 
@@ -74,7 +78,10 @@ def index():
                         filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
                         wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
                         if wikimages:
-                            wikimage_src = wikimages[1]['src']
+                            if "Page semi-protected" in wikimages[1]['src']:
+                                wikimage_src = wikimages[2]['src']
+                            else:
+                                wikimage_src = wikimages[1]['src']
                         else:
                             wikimage_src = "static/globe.gif"
 
@@ -100,7 +107,10 @@ def index():
                     filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
                     wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
                     if wikimages:
-                        wikimage_src = wikimages[1]['src']
+                        if "Page semi-protected" or "Translation_to_english_arrow" in wikimages[1]['src']:
+                            wikimage_src = wikimages[2]['src']
+                        else:
+                            wikimage_src = wikimages[1]['src']
                     else:
                         wikimage_src = "static/globe.gif"
 
@@ -127,7 +137,10 @@ def index():
                 filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
                 wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
                 if wikimages:
-                    wikimage_src = wikimages[1]['src']
+                    if "Page semi-protected" in wikimages[1]['src']:
+                        wikimage_src = wikimages[2]['src']
+                    else:
+                        wikimage_src = wikimages[1]['src']
                 else:
                     wikimage_src = "static/globe.gif"
 
