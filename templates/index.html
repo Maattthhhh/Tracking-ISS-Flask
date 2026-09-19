@@ -63,7 +63,12 @@
         transition: -webkit-transform 0.25s ease, transform 0.25s ease;
         object-fit: contain;
     }
+    .main-content {
+        position: relative;
+        left: -200px;
+    }
 </style>
+<div class="main-content">
     <br>
     <a href="https://maattthhhh.github.io/Pokemon/Pokemon.html"><img src="static/internationalspacestation.jpg" style="width:200px; height: 200px" id="bach"></a>
     <h1>Where is the ISS?</h1>
@@ -73,6 +78,7 @@
         Location: <span id="loc"></span><br />
         <span id="cli"></span>
     </p>
+</div>
     <div class="wikicontent">
         <img src="{{ wikimage_src }}" alt="Scraped Image">
         <p>{{ cleaned_text }}</p>
