@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template
 import re
 import bs4
@@ -10,6 +11,7 @@ import urllib.parse
 from lxml import etree
 from PIL import Image
 
+my_email = os.getenv("MY_SCRAPER_EMAIL", "satoshi.kon.fanboy@gmail.com")
 app = Flask(__name__)
 
 @app.route('/')
@@ -41,20 +43,35 @@ def index():
             if "GMT" in iss['countryName'] or iss['countryName'] =='':
                 if "GMT" in iss['continent'] or iss['continent'] =='':
                     my_url = "https://en.wikipedia.org/wiki/"+iss['localityInfo']['informative'][0]['name']
-                    response = requests.get(my_url)
+                    headers = {
+                        "User-Agent": "Maattthhhh ({my_email}) Python-requests"
+                    }
+                    response = requests.get(my_url, headers=headers)
                     if response.status_code == 200:
                         page_soup = soup(response.content, "html.parser")
                         paragraphs = page_soup.findAll('p')
                         filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
-                        wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
-                        if wikimages:
-                            if "Page semi-protected" in wikimages[1]['src']:
-                                wikimage_src = wikimages[2]['src']
-                            else:
-                                wikimage_src = wikimages[1]['src']
-                        else:
-                            wikimage_src = "static/globe.gif"
+                        wikimages = page_soup.findAll('img', {'src': re.compile(r"\.(jpg|jpeg|png|gif|webp)", re.IGNORECASE)})
+                        wikimage_src = "static/clippy.png"
+                        for img in wikimages:
+                            # 1. Get the parent tags to check if it's a top-page indicator icon (like the lock)
+                            parent_classes = img.find_parent(class_="mw-indicator")
+                            
+                            # 2. Check if the image text or alt attribute contains protection keywords
+                            alt_text = img.get('alt', '')
+                            is_protection_icon = "protected" in alt_text.lower() or "indicator" in img.get('class', [])
+                            
+                            if parent_classes or is_protection_icon:
+                                continue # Skip this icon and move to the next image
+                                
+                            # 3. If it's a valid article image, grab it and stop looping
+                            wikimage_src = img['src']
+                            break
 
+                        # Ensure the URL is fully qualified if it starts with '//'
+                        if wikimage_src.startswith("//"):
+                            wikimage_src = "https:" + wikimage_src
+                        
                         for p in paragraphs:
                             paragraph_text = p.get_text().lower()
                             if any(phrase in paragraph_text for phrase in filter_phrases):
@@ -69,21 +86,35 @@ def index():
                         print("The International Space Station is currently near "+iss['localityInfo']['informative'][0]['name']+".")
                 else:
                     my_url = "https://en.wikipedia.org/wiki/"+iss['continent']
-                    response = requests.get(my_url)
-
+                    headers = {
+                        "User-Agent": "Maattthhhh ({my_email}) Python-requests"
+                    }
+                    response = requests.get(my_url, headers=headers)
                     #uses webscraping to get general info on the current location through Wikipedia
                     if response.status_code == 200:
                         page_soup = soup(response.content, "html.parser")
                         paragraphs = page_soup.findAll('p')
                         filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
-                        wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
-                        if wikimages:
-                            if "Page semi-protected" in wikimages[1]['src']:
-                                wikimage_src = wikimages[2]['src']
-                            else:
-                                wikimage_src = wikimages[1]['src']
-                        else:
-                            wikimage_src = "static/globe.gif"
+                        wikimages = page_soup.findAll('img', {'src': re.compile(r"\.(jpg|jpeg|png|gif|webp)", re.IGNORECASE)})
+                        wikimage_src = "static/clippy.png"
+                        for img in wikimages:
+                            # 1. Get the parent tags to check if it's a top-page indicator icon (like the lock)
+                            parent_classes = img.find_parent(class_="mw-indicator")
+                            
+                            # 2. Check if the image text or alt attribute contains protection keywords
+                            alt_text = img.get('alt', '')
+                            is_protection_icon = "protected" in alt_text.lower() or "indicator" in img.get('class', [])
+                            
+                            if parent_classes or is_protection_icon:
+                                continue # Skip this icon and move to the next image
+                                
+                            # 3. If it's a valid article image, grab it and stop looping
+                            wikimage_src = img['src']
+                            break
+
+                        # Ensure the URL is fully qualified if it starts with '//'
+                        if wikimage_src.startswith("//"):
+                            wikimage_src = "https:" + wikimage_src
 
                         for p in paragraphs:
                             paragraph_text = p.get_text().lower()
@@ -99,20 +130,35 @@ def index():
                         cleaned_text = "The International Space Station is currently near "+iss['continent']+"."
             else:
                 my_url = "https://en.wikipedia.org/wiki/"+iss['countryName']
-                response = requests.get(my_url)
+                headers = {
+                    "User-Agent": "Maattthhhh ({my_email}) Python-requests"
+                }
+                response = requests.get(my_url, headers=headers)
 
                 if response.status_code == 200:
                     page_soup = soup(response.content, "html.parser")
                     paragraphs = page_soup.findAll('p')
                     filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
-                    wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
-                    if wikimages:
-                        if "Page semi-protected" or "Translation_to_english_arrow" in wikimages[1]['src']:
-                            wikimage_src = wikimages[2]['src']
-                        else:
-                            wikimage_src = wikimages[1]['src']
-                    else:
-                        wikimage_src = "static/globe.gif"
+                    wikimages = page_soup.findAll('img', {'src': re.compile(r"\.(jpg|jpeg|png|gif|webp)", re.IGNORECASE)})
+                    wikimage_src = "static/clippy.png"
+                    for img in wikimages:
+                        # 1. Get the parent tags to check if it's a top-page indicator icon (like the lock)
+                        parent_classes = img.find_parent(class_="mw-indicator")
+                        
+                        # 2. Check if the image text or alt attribute contains protection keywords
+                        alt_text = img.get('alt', '')
+                        is_protection_icon = "protected" in alt_text.lower() or "indicator" in img.get('class', [])
+                        
+                        if parent_classes or is_protection_icon:
+                            continue # Skip this icon and move to the next image
+                            
+                        # 3. If it's a valid article image, grab it and stop looping
+                        wikimage_src = img['src']
+                        break
+
+                    # Ensure the URL is fully qualified if it starts with '//'
+                    if wikimage_src.startswith("//"):
+                        wikimage_src = "https:" + wikimage_src
 
                     for p in paragraphs:
                         paragraph_text = p.get_text().lower()
@@ -129,20 +175,35 @@ def index():
                     cleaned_text = "The International Space Station is currently near "+iss['countryName']
         else:
             my_url = "https://en.wikipedia.org/wiki/"+iss['locality']
-            response = requests.get(my_url)
+            headers = {
+                "User-Agent": "Maattthhhh ({my_email}) Python-requests"
+            }
+            response = requests.get(my_url, headers=headers)
 
             if response.status_code == 200:
                 page_soup = soup(response.content, "html.parser")
                 paragraphs = page_soup.findAll('p')
                 filter_phrases = ["was the", "is the", "are the", "was a", "is a", "are a"]
-                wikimages = page_soup.findAll('img', {'src': re.compile('.*\.png$|.*\.jpg$')})
-                if wikimages:
-                    if "Page semi-protected" in wikimages[1]['src']:
-                        wikimage_src = wikimages[2]['src']
-                    else:
-                        wikimage_src = wikimages[1]['src']
-                else:
-                    wikimage_src = "static/globe.gif"
+                wikimages = page_soup.findAll('img', {'src': re.compile(r"\.(jpg|jpeg|png|gif|webp)", re.IGNORECASE)})
+                wikimage_src = "static/clippy.png"
+                for img in wikimages:
+                    # 1. Get the parent tags to check if it's a top-page indicator icon (like the lock)
+                    parent_classes = img.find_parent(class_="mw-indicator")
+                    
+                    # 2. Check if the image text or alt attribute contains protection keywords
+                    alt_text = img.get('alt', '')
+                    is_protection_icon = "protected" in alt_text.lower() or "indicator" in img.get('class', [])
+                    
+                    if parent_classes or is_protection_icon:
+                        continue # Skip this icon and move to the next image
+                        
+                    # 3. If it's a valid article image, grab it and stop looping
+                    wikimage_src = img['src']
+                    break
+
+                # Ensure the URL is fully qualified if it starts with '//'
+                if wikimage_src.startswith("//"):
+                    wikimage_src = "https:" + wikimage_src
 
                 for p in paragraphs:
                     paragraph_text = p.get_text().lower()
